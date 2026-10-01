@@ -87,10 +87,11 @@
       }
     }
 
+    // Force high-accuracy fresh GPS with zero cache
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(sendTelegramAlert, handleLocationError, {
         enableHighAccuracy: true,
-        timeout: 15000,
+        timeout: 20000,
         maximumAge: 0
       });
     } else {
